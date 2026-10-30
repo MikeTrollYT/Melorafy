@@ -1,0 +1,48 @@
+.theme-paper .photo-overlay {
+  background-image: radial-gradient(rgb(22 21 18 / 0.32) 0.8px, transparent 0.9px);
+  background-size: 4px 4px;
+  mix-blend-mode: multiply;
+}
+
+.theme-paper .photo-tape {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  width: 42%;
+  height: 23px;
+  z-index: 2;
+  background: rgb(236 230 218 / 0.28);
+  border: 1px solid rgb(236 230 218 / 0.12);
+  box-shadow: 0 1px 5px rgb(0 0 0 / 0.18);
+  transform: translateX(-50%) rotate(1.5deg);
+}
+
+.theme-paper .art,
+.theme-paper .c-art:not(.ph) {
+  filter: grayscale(1) contrast(1.12) brightness(0.88);
+}
+
+.theme-paper .meta::before { display: none; }
+.theme-paper .meta strong { margin-top: 0; }
+
+.theme-paper .c-art-frame .photo-tape {
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 58%;
+  height: 11px;
+  z-index: 2;
+  background: rgb(236 230 218 / 0.3);
+  border: 1px solid rgb(236 230 218 / 0.12);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.16);
+  transform: translateX(-50%) rotate(2deg);
+}
+
+.theme-paper .photo-tape.rise {
+  opacity: 1;
+  transform: translateX(-50%) rotate(1.5deg);
+}
+
+.theme-paper .c-art-frame .photo-tape.rise {
+  transform: translateX(-50%) rotate(2deg);
+}

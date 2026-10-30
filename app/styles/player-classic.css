@@ -1,0 +1,86 @@
+body:has(.theme-classic) {
+  background: radial-gradient(120% 120% at 30% 0%, #26324d 0%, #12151f 70%);
+}
+
+.theme-classic {
+  --panel: rgba(78, 54, 54, 0.92);
+  --title: #ead84a;
+  --soft: #d9cc78;
+  --bar: #f4e21f;
+  --track: #8a6700;
+  font-family: inherit;
+}
+
+.theme-classic .cover { width: 27%; max-width: 192px; }
+.theme-classic .art,
+.theme-classic .glow { border-radius: 14px; }
+.theme-classic .art { filter: none; box-shadow: none; }
+.theme-classic .cover::before { display: none; }
+.theme-classic .photo-overlay { display: none; }
+.theme-classic .side { gap: 14px; }
+.theme-classic .panel { border: 0; border-radius: 14px; }
+.theme-classic .meta {
+  gap: 2px;
+  padding: 0 clamp(14px, 4cqw, 26px);
+}
+.theme-classic .meta::before { display: none; }
+.theme-classic .meta strong {
+  margin-top: 0;
+  font-size: clamp(1.05rem, 4.2cqw, 1.9rem);
+  line-height: normal;
+}
+.theme-classic .meta span {
+  font-family: inherit;
+  font-size: clamp(0.85rem, 3cqw, 1.3rem);
+}
+.theme-classic .time {
+  height: clamp(44px, 10cqw, 68px);
+  padding: 0 clamp(12px, 3.5cqw, 24px);
+  font-family: inherit;
+  font-size: clamp(0.8rem, 2.8cqw, 1.2rem);
+  font-weight: 700;
+}
+.theme-classic .wave i {
+  width: clamp(3px, 0.9cqw, 6px);
+  max-height: 80%;
+  border-radius: 99px;
+}
+.theme-classic .track {
+  height: clamp(8px, 2cqw, 14px);
+  margin-top: 14px;
+  overflow: hidden;
+  border-radius: 99px;
+}
+.theme-classic .track::after { display: none; }
+.theme-classic .fill { border-radius: 99px; }
+.theme-classic.np-compact .bar {
+  gap: clamp(10px, 2.5cqw, 18px);
+  padding: 8px clamp(8px, 2cqw, 14px);
+  border: 0;
+  border-radius: 14px;
+}
+.theme-classic .c-art {
+  width: clamp(36px, 7cqw, 46px);
+  height: clamp(36px, 7cqw, 46px);
+  border-radius: 8px;
+}
+.theme-classic .c-art-frame {
+  width: clamp(36px, 7cqw, 46px);
+  height: clamp(36px, 7cqw, 46px);
+}
+.theme-classic .c-text { gap: 12px; }
+.theme-classic .c-text strong,
+.theme-classic .c-text span {
+  font-family: inherit;
+  font-size: clamp(0.9rem, 3.4cqw, 1.45rem);
+}
+.theme-classic .c-text .sep {
+  width: 7px;
+  height: 7px;
+  background: var(--title);
+}
+.theme-classic .c-line {
+  height: 16px;
+  border-radius: 99px;
+}
+.theme-classic .c-fill { border-radius: 99px; }

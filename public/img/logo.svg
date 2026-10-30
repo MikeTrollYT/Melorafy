@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" fill="none">
+  <title>Melorafy</title>
+  <g stroke-linejoin="miter" stroke-linecap="square">
+    <path d="M43 61V213H195" stroke="#77715F" stroke-width="2.5" opacity=".72"/>
+    <g transform="rotate(-2.5 128 128)">
+      <rect x="51" y="43" width="154" height="170" stroke="#ECE6DA" stroke-width="5"/>
+    </g>
+    <circle cx="128" cy="128" r="57" stroke="#ECE6DA" stroke-width="4.5"/>
+    <circle cx="128" cy="128" r="45" stroke="#77715F" stroke-width="1.8" opacity=".75"/>
+    <path d="M128 83A45 45 0 0 1 173 128" stroke="#F0A33A" stroke-width="3.5"/>
+    <path d="M98 139V117M113 151V105M128 161V95M143 148V108M158 136V120"
+          stroke="#F0A33A" stroke-width="7"/>
+    <circle cx="128" cy="128" r="4" fill="#ECE6DA" stroke="none"/>
+  </g>
+</svg>
