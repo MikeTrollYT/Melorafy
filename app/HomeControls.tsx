@@ -8,6 +8,8 @@ const styleOptions: Array<{ value: Variant; label: string }> = [
   { value: "paper-compact", label: "Cuaderno compacto" },
   { value: "classic", label: "Clásico completo" },
   { value: "classic-compact", label: "Clásico compacto" },
+  { value: "terminal", label: "Terminal ASCII" },
+  { value: "terminal-compact", label: "Terminal ASCII compacto" },
 ];
 
 export default function HomeControls({ initialVariant }: { initialVariant: Variant }) {

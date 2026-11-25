@@ -14,6 +14,8 @@
 
 - Muestra la canción que suena en este momento (título, artista y carátula).
 - Se actualiza solo, sin recargar la página.
+- Incluye estilos Cuaderno, Clásico y Terminal ASCII, también en formato compacto para embeds.
+- Comparte las consultas de reproducción entre las vistas y avisa cuando falla la conexión.
 - Funciona con tus scrobbles de Last.fm, así que Spotify solo tiene que estar conectado a tu cuenta de Last.fm.
 
 ## Tecnologías
@@ -24,7 +26,7 @@
 
 ## Requisitos
 
-- Node.js 18 o superior
+- Node.js 20.9 o superior
 - Una cuenta de Last.fm con Spotify conectado (Ajustes > Aplicaciones)
 - Una API key de Last.fm: [crear una aquí](https://www.last.fm/api/account/create)
 
@@ -69,6 +71,7 @@
 | `npm run dev`   | Servidor de desarrollo en localhost:3000  |
 | `npm run build` | Genera la versión de producción           |
 | `npm run start` | Arranca la versión de producción          |
+| `npm test`      | Ejecuta las pruebas de estado y estilos   |
 | `npm run lint`  | Revisa el código con ESLint               |
 
 ## Variables de entorno

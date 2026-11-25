@@ -35,8 +35,12 @@ export async function GET() {
     const res = await fetch(url, { cache: "no-store" });
     const data = await res.json().catch(() => null);
 
-    if (!data) return Response.json({ empty: true, reason: `Last.fm respondió ${res.status}` });
-    if (data.error) return Response.json({ empty: true, reason: data.message });
+    if (!res.ok || !data || data.error) {
+      return Response.json(
+        { error: "Last.fm no pudo atender la solicitud" },
+        { status: 502 },
+      );
+    }
 
     const t = data.recenttracks?.track?.[0];
     if (!t) return Response.json({ empty: true, reason: "Tu perfil de Last.fm no tiene canciones todavía" });
@@ -69,6 +73,9 @@ export async function GET() {
       { headers: { "Cache-Control": "public, s-maxage=3, max-age=0, must-revalidate" } }
     );
   } catch {
-    return Response.json({ empty: true, reason: "No se pudo conectar con Last.fm" });
+    return Response.json(
+      { error: "No se pudo conectar con Last.fm" },
+      { status: 502 },
+    );
   }
 }

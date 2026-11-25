@@ -1,5 +1,5 @@
 import HomeControls from "./HomeControls";
-import type { Variant } from "./Melorafy";
+import { variantFromStyle } from "./variants";
 
 export default async function Home({
   searchParams,
@@ -7,14 +7,7 @@ export default async function Home({
   searchParams: Promise<{ style?: string }>;
 }) {
   const { style } = await searchParams;
-  const initialVariant: Variant =
-    style === "classic" || style === "full"
-      ? "classic"
-      : style === "classic-compact" || style === "compact"
-        ? "classic-compact"
-        : style === "paper-compact"
-          ? "paper-compact"
-      : "paper";
+  const initialVariant = variantFromStyle(style);
   return (
     <main className="page">
       <div className="page-content">

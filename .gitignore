@@ -4,3 +4,7 @@ node_modules
 .env.local
 .vercel
 next-env.d.ts
+.tsupgrader/
+*.tsbuildinfo
+.tsupgrader/runtime-validation/standalone-result.json
+*.tsbuildinfo

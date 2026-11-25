@@ -1,17 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { extractPalette } from "./palette";
-
-type Track = {
-  isPlaying?: boolean;
-  empty?: boolean;
-  title?: string;
-  artist?: string;
-  cover?: string | null;
-  durationMs?: number | null;
-  startedAt?: number | null;
-};
+import {
+  getPlaybackProgress,
+  nowPlayingStore,
+  type Track,
+} from "./now-playing";
 
 type WebpackAsset = string | { src?: string; default?: WebpackAsset };
 
@@ -24,13 +19,20 @@ type WebpackRequire = NodeRequire & {
   context(directory: string, recursive: boolean, pattern: RegExp): WebpackAssetContext;
 };
 
-export type Variant = "paper" | "paper-compact" | "classic" | "classic-compact";
-
-const POLL_MS = 5000;
-const GRACE_MS = 30000; // espera antes de decir "no escucho nada"
-const STALE_MS = 20000; // ignora la canción anterior si Last.fm la repite
+export type Variant =
+  | "paper"
+  | "paper-compact"
+  | "classic"
+  | "classic-compact"
+  | "terminal"
+  | "terminal-compact";
 
 const BAR_COUNT = 21;
+const TERMINAL_WAVE_FRAMES = [
+  "|/\\ |/\\ |/\\ |/\\ |/\\ |/\\",
+  "/\\| /\\| /\\| /\\| /\\| /\\|",
+  "\\|/ \\|/ \\|/ \\|/ \\|/ \\|/",
+];
 const placeholderContext = (require as WebpackRequire).context(
   "./img/cats",
   false,
@@ -74,22 +76,102 @@ const fmt = (ms: number) => {
   return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 };
 
-const keyOf = (t: Track) => `${t.artist}|${t.title}`;
 const proxy = (u: string) => `/api/cover?u=${encodeURIComponent(u)}`;
 
+function TerminalPlayer({
+  track,
+  compact,
+  elapsed,
+  duration,
+  reliable,
+  pct,
+}: {
+  track: Track | "idle";
+  compact: boolean;
+  elapsed: number;
+  duration: number;
+  reliable: boolean;
+  pct: number;
+}) {
+  const isPlaying = track !== "idle";
+  const title = isPlaying ? track.title : "Nothing playing";
+  const artist = isPlaying ? track.artist : "--";
+  const filled = Math.round((pct / 100) * 24);
+  const progress = reliable
+    ? `[${"#".repeat(filled)}${"-".repeat(24 - filled)}]`
+    : `[${"-".repeat(24)}]`;
+
+  return (
+    <section
+      className={`np terminal-player${compact ? " terminal-compact" : ""}`}
+      aria-label="Melorafy terminal player"
+    >
+      <div className="terminal-frame">
+        <header className="terminal-header">
+          <span>melorafy@now-playing:~$</span>
+          <span className="terminal-status">[{isPlaying ? "PLAYING" : "IDLE"}]</span>
+        </header>
+        {!compact && (
+          <>
+            <div className="terminal-rule" aria-hidden="true" />
+            <p className="terminal-section">&gt; NOW PLAYING</p>
+            <p className="terminal-track">
+              <span>track:</span> {title}
+            </p>
+            <p className="terminal-track">
+              <span>artist:</span> {artist}
+            </p>
+            <div className="terminal-playback">
+              <code>{progress}</code>
+              <span>
+                {reliable ? fmt(elapsed) : "--:--"} / {reliable ? fmt(duration) : "--:--"}
+              </span>
+            </div>
+            <p className="terminal-output">
+              <span>output:</span>{" "}
+              <span
+                className={`terminal-wave${isPlaying ? " is-playing" : ""}`}
+                aria-hidden="true"
+              >
+                {TERMINAL_WAVE_FRAMES.map((frame, frameIndex) => (
+                  <span
+                    className="terminal-wave-frame"
+                    key={frame}
+                    style={{ "--frame-delay": `${-frameIndex * 160}ms` } as React.CSSProperties}
+                  >
+                    {frame}
+                  </span>
+                ))}
+              </span>
+            </p>
+            <div className="terminal-rule" aria-hidden="true" />
+            <p className="terminal-prompt">$ {isPlaying ? "listening..." : "waiting for playback..."}</p>
+          </>
+        )}
+        {compact && (
+          <div className="terminal-compact-line">
+            <span className="terminal-status">[{isPlaying ? "PLAYING" : "IDLE"}]</span>
+            <span className="terminal-compact-track">
+              {title} <span>/</span> {artist}
+            </span>
+            <code>{reliable ? fmt(elapsed) : "--:--"}</code>
+          </div>
+        )}
+      </div>
+    </section>
+  );
+}
+
 export default function Melorafy({ variant = "paper" }: { variant?: Variant }) {
-  // null = cargando · "idle" = no suena nada · Track = canción actual
-  const [track, setTrack] = useState<Track | "idle" | null>("idle");
-  const [now, setNow] = useState(Date.now());
+  const snapshot = useSyncExternalStore(
+    nowPlayingStore.subscribe,
+    nowPlayingStore.getSnapshot,
+    nowPlayingStore.getServerSnapshot,
+  );
+  const { track, now, error } = snapshot;
   const [palette, setPalette] = useState<React.CSSProperties | undefined>(undefined);
   const [bars, setBars] = useState(makeBars);
   const [placeholderImage, setPlaceholderImage] = useState<string | null>(null);
-
-  const shown = useRef<Track | null>(null);
-  const seen = useRef<{ key: string; at: number; observed: boolean } | null>(null);
-  const left = useRef<Map<string, number>>(new Map());
-  const notPlayingSince = useRef<number | null>(null);
-  const reqId = useRef(0);
 
   useEffect(() => {
     setBars(makeRandomBars());
@@ -100,60 +182,6 @@ export default function Melorafy({ variant = "paper" }: { variant?: Variant }) {
     setPlaceholderImage(
       placeholderImages[Math.floor(Math.random() * placeholderImages.length)],
     );
-  }, []);
-
-  useEffect(() => {
-    const handle = (d: Track) => {
-      const t = Date.now();
-      const playing = !!d.isPlaying && !d.empty && !!d.title;
-
-      if (playing) {
-        const key = keyOf(d);
-        const cur = shown.current ? keyOf(shown.current) : null;
-
-        const leftAt = left.current.get(key);
-        if (cur && key !== cur && leftAt && t - leftAt < STALE_MS) return;
-
-        notPlayingSince.current = null;
-        if (key !== cur) {
-          if (cur) left.current.set(cur, t);
-          // observed = hemos visto empezar la canción con la página abierta
-          seen.current = { key, at: t, observed: !!cur };
-        }
-        shown.current = d;
-        setTrack(d);
-        return;
-      }
-
-      if (!shown.current) {
-        setTrack("idle");
-        return;
-      }
-      if (notPlayingSince.current === null) notPlayingSince.current = t;
-      if (t - notPlayingSince.current > GRACE_MS) {
-        shown.current = null;
-        setTrack("idle");
-      }
-    };
-
-    const load = () => {
-      const id = ++reqId.current;
-      fetch(`/api/now-playing?t=${Date.now()}`, { cache: "no-store" })
-        .then((r) => r.json())
-        .then((d: Track) => {
-          if (id !== reqId.current) return;
-          handle(d);
-        })
-        .catch(() => {});
-    };
-
-    load();
-    const poll = setInterval(load, POLL_MS);
-    const tick = setInterval(() => setNow(Date.now()), 1000);
-    return () => {
-      clearInterval(poll);
-      clearInterval(tick);
-    };
   }, []);
 
   // Color del reproductor según la portada
@@ -172,10 +200,32 @@ export default function Melorafy({ variant = "paper" }: { variant?: Variant }) {
     };
   }, [coverUrl]);
 
-  if (track === null) return null;
+  if (error) {
+    return (
+      <div className="np np-error" role="alert" aria-live="polite">
+        <strong>Error de conexión</strong>
+        <span>{error}</span>
+      </div>
+    );
+  }
 
   const isCompact = variant === "paper-compact" || variant === "classic-compact";
   const theme = variant.startsWith("classic") ? "classic" : "paper";
+  const progress = getPlaybackProgress(track, snapshot.seen, now);
+  const { durationMs: dur, elapsedMs: elapsed, percent: pct, reliable } = progress;
+
+  if (variant.startsWith("terminal")) {
+    return (
+      <TerminalPlayer
+        track={track}
+        compact={variant === "terminal-compact"}
+        elapsed={elapsed}
+        duration={dur}
+        reliable={reliable}
+        pct={pct}
+      />
+    );
+  }
 
   if (track === "idle") {
     if (isCompact) {
@@ -243,14 +293,6 @@ export default function Melorafy({ variant = "paper" }: { variant?: Variant }) {
   }
 
   const art = track.cover ? proxy(track.cover) : null;
-  const dur = track.durationMs ?? 0;
-
-  // El progreso solo se muestra si es fiable: o lo calculó el servidor,
-  // o hemos visto empezar la canción con la página abierta.
-  const reliable = dur > 0 && (track.startedAt != null || !!seen.current?.observed);
-  const start = track.startedAt ?? seen.current?.at ?? now;
-  const elapsed = reliable ? Math.min(Math.max(now - start, 0), dur) : 0;
-  const pct = reliable ? (elapsed / dur) * 100 : 0;
 
   if (isCompact) {
     return (

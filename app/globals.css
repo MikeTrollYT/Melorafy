@@ -484,6 +484,119 @@ body:has(.embed) { background: transparent; }
 
 .idle-dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--color-pencil); }
 
+.np-error {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  border: 1px dashed #d47a65;
+  padding: 14px 18px;
+  background: rgb(28 27 23 / 0.8);
+  color: #e88970;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+}
+
+.np-error span { color: var(--color-paper-dim); }
+
+/* ASCII terminal player */
+.terminal-player {
+  --terminal-bg: #101510;
+  --terminal-fg: #c4e6b5;
+  --terminal-dim: #78906f;
+  --terminal-accent: #a8ed79;
+  color: var(--terminal-fg);
+  font-family: var(--font-mono);
+  font-size: clamp(0.7rem, 2cqw, 0.86rem);
+}
+
+.terminal-frame {
+  min-width: 0;
+  border: 1px solid var(--terminal-dim);
+  padding: clamp(13px, 3cqw, 22px);
+  background: var(--terminal-bg);
+  box-shadow: 5px 5px 0 rgb(0 0 0 / 0.22);
+}
+
+.terminal-header,
+.terminal-playback,
+.terminal-compact-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.terminal-header {
+  color: var(--terminal-accent);
+  font-size: 0.92em;
+}
+
+.terminal-status,
+.terminal-track > span,
+.terminal-output > span {
+  color: var(--terminal-accent);
+}
+
+.terminal-rule {
+  height: 1px;
+  margin: 14px 0;
+  background: repeating-linear-gradient(
+    to right,
+    var(--terminal-dim) 0,
+    var(--terminal-dim) 7px,
+    transparent 7px,
+    transparent 10px
+  );
+}
+
+.terminal-section,
+.terminal-track,
+.terminal-output,
+.terminal-prompt {
+  margin: 8px 0;
+  overflow-wrap: anywhere;
+}
+
+.terminal-section { color: var(--terminal-accent); }
+.terminal-track { color: var(--terminal-fg); }
+.terminal-playback { justify-content: flex-start; margin: 16px 0 10px; }
+.terminal-playback code,
+.terminal-compact-line code { color: var(--terminal-accent); }
+.terminal-output { color: var(--terminal-fg); letter-spacing: 0.04em; }
+.terminal-wave {
+  position: relative;
+  display: inline-block;
+  width: 23ch;
+  height: 1em;
+  vertical-align: middle;
+  letter-spacing: 0;
+}
+
+.terminal-wave-frame {
+  position: absolute;
+  inset: 0;
+  white-space: pre;
+  opacity: 0;
+}
+
+.terminal-wave-frame:first-child { opacity: 1; }
+
+.terminal-wave.is-playing .terminal-wave-frame {
+  animation: terminal-wave-frame 480ms steps(1, end) var(--frame-delay) infinite;
+}
+
+@keyframes terminal-wave-frame {
+  0%, 33.333% { opacity: 1; }
+  33.334%, 100% { opacity: 0; }
+}
+
+.terminal-prompt { color: var(--terminal-dim); }
+
+.terminal-compact .terminal-frame { padding: 10px 13px; }
+.terminal-compact-line { justify-content: flex-start; min-width: 0; margin-top: 8px; }
+.terminal-compact-track { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.terminal-compact-track > span { color: var(--terminal-dim); }
+
 /* Empty state keeps the player frame instead of replacing it with a notice. */
 .np-empty .cover::before { border-style: dashed; opacity: 0.6; }
 .np-empty .art.ph,
@@ -591,6 +704,7 @@ body:has(.embed) { background: transparent; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .wave i { animation: none; }
+  .terminal-wave-frame { animation: none !important; }
   .fill, .c-fill { transition: none; }
   .rise { transition: none; }
   .style-gallery,
